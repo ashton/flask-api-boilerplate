@@ -2,6 +2,7 @@
 from flask import Flask
 from api.settings import ProdConfig
 from api.extensions import db, migrate
+from api.exceptions import BaseException
 
 
 def create_app(config_object=ProdConfig):
@@ -15,9 +16,20 @@ def create_app(config_object=ProdConfig):
     app.config.from_object(config_object)
 
     register_extensions(app)
+    register_errorhandlers(app)
     return app
 
 
 def register_extensions(app):
     db.init_app(app)
     migrate.init_app(app, db)
+
+
+def register_errorhandlers(app):
+
+    def errorhandler(error):
+        response = error.to_json()
+        response.status_code = error.status_code
+        return response
+
+    app.errorhandler(BaseException)(errorhandler)
