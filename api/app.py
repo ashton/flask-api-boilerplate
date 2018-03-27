@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
+
+from api import commands
 from api.settings import ProdConfig
 from api.extensions import db, migrate
 from api.exceptions import BaseException
@@ -17,10 +19,13 @@ def create_app(config_object=ProdConfig):
 
     register_extensions(app)
     register_errorhandlers(app)
+    register_commands(app)
     return app
 
 
 def register_extensions(app):
+    """Register Flask extensions."""
+
     db.init_app(app)
     migrate.init_app(app, db)
 
@@ -33,3 +38,8 @@ def register_errorhandlers(app):
         return response
 
     app.errorhandler(BaseException)(errorhandler)
+
+
+def register_commands(app):
+    """Register Click commands."""
+    app.cli.add_command(commands.test)
